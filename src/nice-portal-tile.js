@@ -26,16 +26,16 @@ export class NicePortalTile extends LitElement {
             background-color: var(--tile-bg, #263238);
             color: var(--tile-fg, #cfd8dc);
             text-align: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 1px 3px var(--tile-shadow, rgba(0, 0, 0, 0.4));
             transition: box-shadow 120ms ease, transform 120ms ease;
         }
 
         :host(:hover) {
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 3px 8px var(--tile-shadow-hover, rgba(0, 0, 0, 0.5));
         }
 
         :host([active]) {
-            box-shadow: 0 0 0 2px var(--accent, #4dd0e1), 0 6px 14px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 2px var(--accent, #4dd0e1), 0 6px 14px var(--tile-shadow-active, rgba(0, 0, 0, 0.6));
             transform: translateY(-1px);
         }
 

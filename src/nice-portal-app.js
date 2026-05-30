@@ -10,7 +10,8 @@ export class NicePortalApp extends LitElement {
     static properties = {
         heading: {type: String},
         pages: {state: true},
-        search: {state: true}
+        search: {state: true},
+        themeMode: {state: true}
     };
 
     static styles = css`
@@ -19,7 +20,7 @@ export class NicePortalApp extends LitElement {
             min-height: 100%;
             font-family: Roboto, 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg, #37474f);
-            color: #fff;
+            color: var(--bar-fg, #fff);
         }
 
         header {
@@ -48,7 +49,7 @@ export class NicePortalApp extends LitElement {
             max-width: 420px;
             margin-left: auto;
             padding: 0 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+            border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.25));
         }
 
         .search:focus-within {
@@ -59,7 +60,7 @@ export class NicePortalApp extends LitElement {
             flex: 0 0 auto;
             width: 18px;
             height: 18px;
-            fill: #90a4ae;
+            fill: var(--muted, #90a4ae);
         }
 
         .search input {
@@ -69,13 +70,13 @@ export class NicePortalApp extends LitElement {
             padding: 10px 0;
             border: 0;
             background: transparent;
-            color: #eceff1;
+            color: var(--bar-fg, #eceff1);
             font: inherit;
             outline: none;
         }
 
         .search input::placeholder {
-            color: #78909c;
+            color: var(--muted, #78909c);
         }
 
         .clear {
@@ -89,12 +90,46 @@ export class NicePortalApp extends LitElement {
             visibility: hidden;
         }
 
+        .clear svg {
+            fill: var(--muted, #90a4ae);
+        }
+
         .search input:not(:placeholder-shown) ~ .clear {
             visibility: visible;
         }
 
         .clear:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--hover-overlay, rgba(255, 255, 255, 0.1));
+        }
+
+        .theme-toggle {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: var(--bar-fg, #fff);
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            background: var(--hover-overlay, rgba(255, 255, 255, 0.1));
+        }
+
+        .theme-toggle:focus-visible {
+            outline: 2px solid var(--accent, #4dd0e1);
+            outline-offset: 1px;
+        }
+
+        .theme-toggle svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
         }
 
         #content {
@@ -106,7 +141,7 @@ export class NicePortalApp extends LitElement {
         .empty {
             padding: 48px 16px;
             text-align: center;
-            color: #90a4ae;
+            color: var(--muted, #90a4ae);
         }
     `;
 
@@ -116,18 +151,28 @@ export class NicePortalApp extends LitElement {
         this.pages = [];
         this.search = '';
         this._allPages = [];
+        this.themeMode = this._readThemeMode();
         this._onKeydown = this._onKeydown.bind(this);
+        this._mql = window.matchMedia('(prefers-color-scheme: dark)');
+        this._onSystemThemeChange = () => {
+            if (this.themeMode === 'system') {
+                this._applyTheme();
+            }
+        };
     }
 
     connectedCallback() {
         super.connectedCallback();
         document.addEventListener('keydown', this._onKeydown);
+        this._mql.addEventListener('change', this._onSystemThemeChange);
+        this._applyTheme();
         this._loadConfig();
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         document.removeEventListener('keydown', this._onKeydown);
+        this._mql.removeEventListener('change', this._onSystemThemeChange);
     }
 
     async _loadConfig() {
@@ -177,12 +222,21 @@ export class NicePortalApp extends LitElement {
                     >
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path
-                                fill="#90a4ae"
                                 d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
                             />
                         </svg>
                     </button>
                 </label>
+                <button
+                    class="theme-toggle"
+                    type="button"
+                    tabindex="-1"
+                    title=${`Theme: ${this.themeMode} (click to change)`}
+                    aria-label=${`Theme: ${this.themeMode}. Click to change.`}
+                    @click=${this._cycleTheme}
+                >
+                    ${this._themeIcon()}
+                </button>
             </header>
             <div id="content">
                 ${visible.map(
@@ -238,6 +292,61 @@ export class NicePortalApp extends LitElement {
     _clearSearch() {
         this.search = '';
         this._searchInput.focus();
+    }
+
+    _readThemeMode() {
+        try {
+            const stored = localStorage.getItem('portal-theme');
+            return stored === 'light' || stored === 'dark' ? stored : 'system';
+        } catch (e) {
+            return 'system';
+        }
+    }
+
+    /** Resolve the active theme mode to a concrete 'light'/'dark' on <html>. */
+    _applyTheme() {
+        const resolved =
+            this.themeMode === 'system'
+                ? (this._mql.matches ? 'dark' : 'light')
+                : this.themeMode;
+        document.documentElement.dataset.theme = resolved;
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+            meta.content = resolved === 'dark' ? '#263238' : '#ffffff';
+        }
+    }
+
+    /** Cycle System -> Light -> Dark -> System and persist the choice. */
+    _cycleTheme() {
+        const order = ['system', 'light', 'dark'];
+        this.themeMode = order[(order.indexOf(this.themeMode) + 1) % order.length];
+        try {
+            if (this.themeMode === 'system') {
+                localStorage.removeItem('portal-theme');
+            } else {
+                localStorage.setItem('portal-theme', this.themeMode);
+            }
+        } catch (e) {
+            // localStorage unavailable (e.g. private mode) — theme still applies for the session.
+        }
+        this._applyTheme();
+    }
+
+    _themeIcon() {
+        // Each icon is a complete <svg> so the SVG namespace is established
+        // within a single template (a bare <path> interpolated into <svg> would
+        // be created in the HTML namespace and not render).
+        switch (this.themeMode) {
+            case 'light':
+                // sun
+                return html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2v-2H2v2zm18 0h2v-2h-2v2zm-9 9h2v-2h-2v2zM11 1v2h2V1h-2zm7.07 4.93l-1.41 1.41 1.41 1.42 1.42-1.42-1.42-1.41zM4.93 18.36l1.41-1.42-1.41-1.41-1.42 1.41 1.42 1.42zm0-12.73L3.51 7.05l1.42 1.41 1.41-1.41-1.41-1.42zm12.02 12.73l1.42 1.42 1.41-1.42-1.41-1.41-1.42 1.41z" /></svg>`;
+            case 'dark':
+                // moon
+                return html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" /></svg>`;
+            default:
+                // system / auto (half-filled circle)
+                return html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10zm0-18v16c-4.41 0-8-3.59-8-8s3.59-8 8-8z" /></svg>`;
+        }
     }
 
     _onKeydown(event) {

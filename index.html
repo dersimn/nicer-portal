@@ -8,13 +8,65 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#263238">
     <style>
+        /* Theme tokens. `data-theme` on <html> is set to "light" or "dark"
+           (resolved from the user's choice or the system preference). */
+        html[data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #37474f;
+            --bar-bg: #263238;
+            --bar-fg: #ffffff;
+            --accent: #4dd0e1;
+            --tile-bg: #263238;
+            --tile-fg: #cfd8dc;
+            --tile-title: #90a4ae;
+            --heading-fg: #eceff1;
+            --muted: #90a4ae;
+            --border: rgba(255, 255, 255, 0.25);
+            --tile-shadow: rgba(0, 0, 0, 0.4);
+            --tile-shadow-hover: rgba(0, 0, 0, 0.5);
+            --tile-shadow-active: rgba(0, 0, 0, 0.6);
+            --hover-overlay: rgba(255, 255, 255, 0.1);
+        }
+
+        html[data-theme="light"] {
+            color-scheme: light;
+            --bg: #eceff1;
+            --bar-bg: #ffffff;
+            --bar-fg: #263238;
+            --accent: #00838f;
+            --tile-bg: #ffffff;
+            --tile-fg: #37474f;
+            --tile-title: #607d8b;
+            --heading-fg: #263238;
+            --muted: #607d8b;
+            --border: rgba(0, 0, 0, 0.2);
+            --tile-shadow: rgba(0, 0, 0, 0.16);
+            --tile-shadow-hover: rgba(0, 0, 0, 0.24);
+            --tile-shadow-active: rgba(0, 0, 0, 0.32);
+            --hover-overlay: rgba(0, 0, 0, 0.06);
+        }
+
         html, body {
             margin: 0;
             padding: 0;
             min-height: 100%;
-            background-color: #37474f;
+            background-color: var(--bg, #37474f);
         }
     </style>
+    <script>
+        // Apply the saved theme before first paint to avoid a flash.
+        (function () {
+            try {
+                var mode = localStorage.getItem('portal-theme') || 'system';
+                var resolved = mode === 'system'
+                    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                    : mode;
+                document.documentElement.dataset.theme = resolved;
+            } catch (e) {
+                document.documentElement.dataset.theme = 'dark';
+            }
+        })();
+    </script>
     <script type="module" src="src/nice-portal-app.js"></script>
 </head>
 <body>

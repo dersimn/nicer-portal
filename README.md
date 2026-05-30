@@ -10,6 +10,10 @@ Inspired by [hobbyquaker/nice-portal](https://github.com/hobbyquaker/nice-portal
 ## Features
 
 - Tile-based layout grouped into named pages (categories).
+- Light / dark theme switch in the toolbar that cycles **Auto → Light → Dark**.
+  Defaults to following the OS preference (`prefers-color-scheme`) and reacts to
+  system changes live; an explicit choice is remembered in `localStorage` and
+  applied before first paint (no flash).
 - Instant tag-based search (matches every space-separated term against a tile's
   tags and title).
 - Full keyboard navigation:
