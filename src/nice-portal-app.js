@@ -215,8 +215,56 @@ export class NicePortalApp extends LitElement {
             this.heading = config.title;
             document.title = config.title;
         }
-        this._allPages = config.pages;
+        // Resolve `${...}` template expressions in hrefs against the current
+        // location, so configs can point at the host shown in the browser bar.
+        this._allPages = config.pages.map(page => ({
+            ...page,
+            tiles: (page.tiles || []).map(tile => ({
+                ...tile,
+                href: this._interpolate(tile.href)
+            }))
+        }));
         this.pages = this._allPages;
+    }
+
+    /** Variables exposed to href template expressions. */
+    _locationContext() {
+        const loc = window.location;
+        const defaultPort = loc.protocol === 'https:' ? 443 : 80;
+        return {
+            protocol: loc.protocol, // "https:"
+            hostname: loc.hostname, // "192.168.1.5" or "portal.example.com"
+            port: loc.port ? Number(loc.port) : defaultPort, // number, e.g. 8080
+            host: loc.host, // "192.168.1.5:8080"
+            origin: loc.origin, // "https://192.168.1.5:8080"
+            href: loc.href,
+            pathname: loc.pathname,
+            hash: loc.hash,
+            search: loc.search
+        };
+    }
+
+    /**
+     * Evaluate a string as a JavaScript template literal with the location
+     * context in scope, e.g. "http://${hostname}:${port + 1000}/foo". Strings
+     * without `${` are returned unchanged. The config is a trusted, author-
+     * controlled file, so evaluating it is intentional (note: a strict
+     * `unsafe-eval` CSP would block this).
+     */
+    _interpolate(value) {
+        if (typeof value !== 'string' || !value.includes('${')) {
+            return value;
+        }
+        const ctx = this._locationContext();
+        const escaped = value.replace(/\\/g, '\\\\').replace(/`/g, '\\`');
+        try {
+            // eslint-disable-next-line no-new-func
+            const fn = new Function(...Object.keys(ctx), 'return `' + escaped + '`;');
+            return fn(...Object.values(ctx));
+        } catch (error) {
+            console.error(`Failed to evaluate href template: ${value}`, error);
+            return value;
+        }
     }
 
     render() {

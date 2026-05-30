@@ -78,6 +78,13 @@ pages:
         title: Node-RED Testsystem
         tags: node-red nodered raspi testsystem redmatic homematic
         img: img/node-red.png
+      # hrefs support JavaScript template expressions, evaluated against the
+      # current browser location (so the host/IP need not be known up front).
+      # Quote the value so YAML doesn't choke on the `:` and `{`.
+      - href: "${protocol}//${hostname}:${port + 1000}/foo"
+        title: This host, port + 1000
+        tags: dynamic relative template
+        img: img/node-red.png
   - title: Devices
     tiles:
       - href: http://hp-photosmart

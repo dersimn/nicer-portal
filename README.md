@@ -45,6 +45,26 @@ provided in [config.example.yaml](config.example.yaml) (rename it to
 | `title` | no       | label shown under the icon (also searched)             |
 | `halo`  | no       | `true` adds a theme-aware halo around the logo so single-color (all-white or all-black) transparent PNGs stay visible. Defaults to `false`. |
 
+### Dynamic hrefs
+
+`href` may contain JavaScript **template expressions** (`${...}`), evaluated
+against the page's current location. This is useful when the host/IP isn't known
+ahead of time — e.g. the portal is reached by IP and links to other ports on the
+same host:
+
+```yaml
+- href: "http://${hostname}:${port + 1000}/foo"   # quote it in YAML
+```
+
+Available variables (from `window.location`): `protocol` (`"https:"`),
+`hostname`, `port` (a **number**, defaulting to 80/443), `host`, `origin`,
+`href`, `pathname`, `hash`, `search`. Any valid JS expression works, so
+`${port + 1000}` etc. are fine. An `href` with no `${` is used verbatim.
+
+> Expressions are evaluated as JavaScript (via `new Function`), which is safe
+> because the config is your own static file — but a strict `unsafe-eval`
+> Content-Security-Policy would block it.
+
 ```yaml
 # config.yaml
 title: portal
