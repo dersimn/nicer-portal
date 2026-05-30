@@ -33,6 +33,7 @@ Edit [config.json](config.json) to suit your needs — that's all. Each tile tak
 | `img`   | yes      | icon path (e.g. `img/grafana.png`)                     |
 | `tags`  | yes      | space-separated keywords used for search               |
 | `title` | no       | label shown under the icon (also searched)             |
+| `halo`  | no       | `true` adds a theme-aware halo around the logo so single-color (all-white or all-black) transparent PNGs stay visible. Defaults to `false`. |
 
 ```json
 {

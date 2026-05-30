@@ -11,7 +11,8 @@ export class NicePortalTile extends LitElement {
         img: {type: String},
         title: {type: String},
         tags: {type: String},
-        active: {type: Boolean, reflect: true}
+        active: {type: Boolean, reflect: true},
+        halo: {type: Boolean, reflect: true}
     };
 
     static styles = css`
@@ -64,6 +65,11 @@ export class NicePortalTile extends LitElement {
             max-width: 90%;
             user-select: none;
             -webkit-user-drag: none;
+        }
+
+        /* Opt-in via "halo": true in config.json. The halo color is
+           theme-dependent (see --img-filter in index.html). */
+        :host([halo]) img {
             filter: var(--img-filter, none);
         }
 
@@ -84,6 +90,7 @@ export class NicePortalTile extends LitElement {
     constructor() {
         super();
         this.active = false;
+        this.halo = false;
     }
 
     render() {

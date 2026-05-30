@@ -52,6 +52,7 @@ export class NicePortalPage extends LitElement {
                             img=${tile.img}
                             title=${tile.title || ''}
                             tags=${tile.tags || ''}
+                            ?halo=${tile.halo === true}
                         ></nice-portal-tile>
                     `
                 )}
