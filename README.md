@@ -1,28 +1,76 @@
-# nice-portal
+# nicer-portal 🏰
 
-[![Current Release](https://img.shields.io/github/release/hobbyquaker/nice-portal.svg?colorB=4cc61e)](https://github.com/hobbyquaker/nice-portal/releases/latest)
-[![Dependencies Status](https://david-dm.org/hobbyquaker/nice-portal/status.svg)](https://david-dm.org/hobbyquaker/nice-portal)
-[![Build Status](https://travis-ci.org/hobbyquaker/nice-portal.svg?branch=master)](https://travis-ci.org/hobbyquaker/nice-portal)
-[![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
+A dead simple — but nice — tile portal webpage, rebuilt with [Lit](https://lit.dev/)
+and **zero runtime dependencies**. Lit itself is vendored locally in
+[vendor/lit-all.min.js](vendor/lit-all.min.js), so the whole site can be hosted
+fully **air-gapped** — just static files, no CDN, no build step, no network.
 
-> dead simple - but nice - portal webpage 🏰
+Inspired by [hobbyquaker/nice-portal](https://github.com/hobbyquaker/nice-portal).
 
-I wanted a nice looking webpage with _working keyboard navigation_ as a “portal” to the services of my home network - so I created this. :-)
+## Features
 
-![](screenshot.png)
+- Tile-based layout grouped into named pages (categories).
+- Instant tag-based search (matches every space-separated term against a tile's
+  tags and title).
+- Full keyboard navigation:
+  - **Arrow keys** — move between tiles in the grid.
+  - **Enter / Space** — open the focused tile.
+  - **Enter** — when the search narrows results to a single tile, opens it.
+  - **Escape** — clear the search.
+  - **Any character** — starts searching immediately, from anywhere.
 
-## Install
+## Usage
 
-Download the latest `nice-portal-<version>.tar.gz` from the [release page](https://github.com/hobbyquaker/nice-portal/releases/latest), unzip and put on a webserver (opening locally from a `file://` URL will fail due to CORS).
-Edit the `config.json` file to suite your needs, that's all.
+Edit [config.json](config.json) to suit your needs — that's all. Each tile takes:
 
-## Contributing
+| field   | required | description                                            |
+| ------- | -------- | ------------------------------------------------------ |
+| `href`  | yes      | link target                                            |
+| `img`   | yes      | icon path (e.g. `img/grafana.png`)                     |
+| `tags`  | yes      | space-separated keywords used for search               |
+| `title` | no       | label shown under the icon (also searched)             |
 
-Pull requests welcome! 😊    
-Clone the Repo, do `npm install`, use `polymer serve` for development. Please run `npm test` before committing, most lint issues can be auto-corrected with `npm run lintfix`.
+```json
+{
+    "title": "portal",
+    "pages": [
+        {"title": "Services", "tiles": [
+            {"href": "https://grafana", "tags": "grafana charts", "img": "img/grafana.png"}
+        ]}
+    ]
+}
+```
 
-## License
+## Running it
 
-MIT (c) Sebastian Raff
+It's just static files — serve the directory with any web server, then open the
+printed URL in a browser.
 
+A server is needed only because the app `fetch`es `config.json`; opening
+`index.html` via `file://` is blocked by browser CORS rules.
+
+**Python** (if you have it on hand):
+
+```sh
+python3 -m http.server 8080
+# open http://localhost:8080
+```
+
+**Docker only** (no Python / Node needed) — serve this directory with nginx:
+
+```sh
+docker run --rm -p 8080:80 -v "$PWD":/usr/share/nginx/html:ro nginx:alpine
+# open http://localhost:8080
+```
+
+Either way the container/server only reads static files; nothing reaches out to
+the network, so it works the same air-gapped.
+
+## Updating the vendored Lit
+
+The only third-party code is the pinned Lit bundle. To refresh it:
+
+```sh
+curl -L -o vendor/lit-all.min.js \
+  "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js"
+```

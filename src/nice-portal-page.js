@@ -1,45 +1,68 @@
-import {html, PolymerElement} from '@polymer/polymer/polymer-element';
-import './nice-portal-tile';
+import {LitElement, html, css} from '../vendor/lit-all.min.js';
+import './nice-portal-tile.js';
 
-class NicePortalPage extends PolymerElement {
-    static get template() {
+/**
+ * A titled group ("page") of tiles. Hidden automatically when it has no tiles
+ * to show (e.g. filtered out by search).
+ */
+export class NicePortalPage extends LitElement {
+    static properties = {
+        heading: {type: String},
+        tiles: {type: Array}
+    };
+
+    static styles = css`
+        :host {
+            display: block;
+        }
+
+        :host([hidden]) {
+            display: none;
+        }
+
+        h3 {
+            margin: 0;
+            padding: 16px 12px 4px;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--heading-fg, #eceff1);
+        }
+
+        #container {
+            padding: 6px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+    `;
+
+    constructor() {
+        super();
+        this.tiles = [];
+    }
+
+    render() {
         return html`
-            <style>
-                h3 {
-                    padding: 12px 6px 0;
-                    margin: 0;
-                    color: #fff;
-                    background-color: var(--paper-blue-grey-800);
-                }
-                #container {
-                    padding: 6px;
-                    display: flex;
-                    flex-direction: row;
-                    flex-wrap: wrap;
-                    background-color: var(--paper-blue-grey-800);
-                }
-            </style>
-            <h3>[[title]]</h3>
+            <h3>${this.heading}</h3>
             <div id="container">
-                <dom-repeat items="[[tiles]]">
-                    <template>
-                        <nice-portal-tile id="tile-[[index]]" img="[[item.img]]" href="[[item.href]]" title="[[item.title]]" tags="[[item.tags]]"></nice-portal-tile>
-                    </template>
-                </dom-repeat>
+                ${this.tiles.map(
+                    tile => html`
+                        <nice-portal-tile
+                            href=${tile.href}
+                            img=${tile.img}
+                            title=${tile.title || ''}
+                            tags=${tile.tags || ''}
+                        ></nice-portal-tile>
+                    `
+                )}
             </div>
         `;
     }
 
-    static get properties() {
-        return {
-            title: {
-                type: String
-            },
-            tiles: {
-                type: Array
-            }
-        };
+    /** All tile elements in this page, in DOM order. */
+    get tileElements() {
+        return [...this.renderRoot.querySelectorAll('nice-portal-tile')];
     }
 }
 
-window.customElements.define('nice-portal-page', NicePortalPage);
+customElements.define('nice-portal-page', NicePortalPage);

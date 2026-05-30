@@ -1,6 +1,8 @@
 {
-  "name": "nice-portal",
-  "short_name": "nice-portal",
-  "start_url": "/",
-  "display": "standalone"
+  "name": "nicer-portal",
+  "short_name": "portal",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#37474f",
+  "theme_color": "#263238"
 }
