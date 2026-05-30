@@ -64,6 +64,7 @@ export class NicePortalTile extends LitElement {
             max-width: 90%;
             user-select: none;
             -webkit-user-drag: none;
+            filter: var(--img-filter, none);
         }
 
         #title {

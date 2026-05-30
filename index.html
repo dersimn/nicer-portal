@@ -26,6 +26,8 @@
             --tile-shadow-hover: rgba(0, 0, 0, 0.5);
             --tile-shadow-active: rgba(0, 0, 0, 0.6);
             --hover-overlay: rgba(255, 255, 255, 0.1);
+            /* Dark tiles already contrast with white logos. */
+            --img-filter: none;
         }
 
         html[data-theme="light"] {
@@ -44,6 +46,12 @@
             --tile-shadow-hover: rgba(0, 0, 0, 0.24);
             --tile-shadow-active: rgba(0, 0, 0, 0.32);
             --hover-overlay: rgba(0, 0, 0, 0.06);
+            /* Trace a dark halo around logo alpha so white-fill PNGs stay
+               visible on the light tile. Layered drop-shadows follow the
+               logo's shape (not its bounding box) for an outline effect. */
+            --img-filter:
+                drop-shadow(0 0 1px rgba(0, 0, 0, 0.6))
+                drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.45));
         }
 
         html, body {
