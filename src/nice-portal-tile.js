@@ -1,7 +1,7 @@
 import {LitElement, html, css} from '../vendor/lit-all.min.js';
 
 /**
- * A single clickable portal tile: an icon, an optional title, and a link.
+ * A single clickable portal tile: an optional icon, an optional title, and a link.
  * Reports focus/blur up via the `active` reflected attribute so the app can
  * track keyboard selection.
  */
@@ -85,6 +85,17 @@ export class NicePortalTile extends LitElement {
             overflow: hidden;
             text-overflow: ellipsis;
         }
+
+        /* No icon → let the title fill the tile and center it. */
+        a:not(:has(#img)) #title {
+            flex: 1 1 auto;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            white-space: normal;
+        }
     `;
 
     constructor() {
@@ -106,9 +117,11 @@ export class NicePortalTile extends LitElement {
                     this.active = false;
                 }}
             >
-                <div id="img">
-                    <img draggable="false" src=${this.img} alt=${this.title || this.tags || ''} />
-                </div>
+                ${this.img
+                    ? html`<div id="img">
+                          <img draggable="false" src=${this.img} alt=${this.title || this.tags || ''} />
+                      </div>`
+                    : ''}
                 ${this.title ? html`<div id="title">${this.title}</div>` : ''}
             </a>
         `;

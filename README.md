@@ -34,14 +34,13 @@ finds, in this order:
 3. `config.json`
 
 So you can write the config in either YAML or JSON. A YAML starting point is
-provided in [config.example.yaml](config.example.yaml) (rename it to
-`config.yaml` to use it). Each tile takes:
+provided in [config.yaml](config.yaml). Each tile takes:
 
 | field   | required | description                                            |
 | ------- | -------- | ------------------------------------------------------ |
 | `href`  | yes      | link target                                            |
-| `img`   | yes      | icon path (e.g. `img/grafana.png`)                     |
-| `tags`  | yes      | space-separated keywords used for search               |
+| `img`   | no       | icon path (e.g. `img/grafana.png`); omit it to render a text-only tile |
+| `tags`  | no       | space-separated keywords used for search               |
 | `title` | no       | label shown under the icon (also searched)             |
 | `halo`  | no       | `true` adds a theme-aware halo around the logo so single-color (all-white or all-black) transparent PNGs stay visible. Defaults to `false`. |
 
