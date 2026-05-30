@@ -1,10 +1,11 @@
 import {LitElement, html, css} from '../vendor/lit-all.min.js';
+import {load as parseYAML} from '../vendor/js-yaml.min.js';
 import './nice-portal-page.js';
 
 /**
- * The portal application: loads config.json, renders pages of tiles, provides
- * tag-based search and full keyboard navigation (arrows / enter / space /
- * escape / type-to-search).
+ * The portal application: loads its config (config.yaml > config.yml >
+ * config.json), renders pages of tiles, provides tag-based search and full
+ * keyboard navigation (arrows / enter / space / escape / type-to-search).
  */
 export class NicePortalApp extends LitElement {
     static properties = {
@@ -176,18 +177,46 @@ export class NicePortalApp extends LitElement {
     }
 
     async _loadConfig() {
-        try {
-            const response = await fetch('./config.json');
-            const config = await response.json();
-            if (config.title) {
-                this.heading = config.title;
-                document.title = config.title;
+        // Precedence: config.yaml > config.yml > config.json.
+        const sources = [
+            {url: './config.yaml', yaml: true},
+            {url: './config.yml', yaml: true},
+            {url: './config.json', yaml: false}
+        ];
+
+        for (const {url, yaml} of sources) {
+            let response;
+            try {
+                response = await fetch(url);
+            } catch (error) {
+                continue; // network/file error — try the next candidate
             }
-            this._allPages = Array.isArray(config.pages) ? config.pages : [];
-            this.pages = this._allPages;
-        } catch (error) {
-            console.error('Failed to load config.json', error);
+            if (!response.ok) {
+                continue; // typically 404 — file not present
+            }
+            try {
+                const text = await response.text();
+                const config = yaml ? parseYAML(text) : JSON.parse(text);
+                if (!config || !Array.isArray(config.pages)) {
+                    continue; // not a valid portal config (e.g. SPA fallback)
+                }
+                this._applyConfig(config);
+                return;
+            } catch (error) {
+                console.error(`Failed to parse ${url}`, error);
+                return; // file exists but is broken — surface it, don't fall back
+            }
         }
+        console.error('No config found (looked for config.yaml, config.yml, config.json).');
+    }
+
+    _applyConfig(config) {
+        if (config.title) {
+            this.heading = config.title;
+            document.title = config.title;
+        }
+        this._allPages = config.pages;
+        this.pages = this._allPages;
     }
 
     render() {

@@ -1,9 +1,10 @@
 # nicer-portal 🏰
 
 A dead simple — but nice — tile portal webpage, rebuilt with [Lit](https://lit.dev/)
-and **zero runtime dependencies**. Lit itself is vendored locally in
-[vendor/lit-all.min.js](vendor/lit-all.min.js), so the whole site can be hosted
-fully **air-gapped** — just static files, no CDN, no build step, no network.
+and **no runtime fetches to the network**. Its two dependencies — Lit and
+[js-yaml](https://github.com/nodeca/js-yaml) — are vendored locally in
+[vendor/](vendor/), so the whole site can be hosted fully **air-gapped** — just
+static files, no CDN, no build step, no network.
 
 Inspired by [hobbyquaker/nice-portal](https://github.com/hobbyquaker/nice-portal).
 
@@ -25,7 +26,16 @@ Inspired by [hobbyquaker/nice-portal](https://github.com/hobbyquaker/nice-portal
 
 ## Usage
 
-Edit [config.json](config.json) to suit your needs — that's all. Each tile takes:
+Edit the config to suit your needs — that's all. The app loads the first file it
+finds, in this order:
+
+1. `config.yaml`
+2. `config.yml`
+3. `config.json`
+
+So you can write the config in either YAML or JSON. A YAML starting point is
+provided in [config.example.yaml](config.example.yaml) (rename it to
+`config.yaml` to use it). Each tile takes:
 
 | field   | required | description                                            |
 | ------- | -------- | ------------------------------------------------------ |
@@ -35,7 +45,19 @@ Edit [config.json](config.json) to suit your needs — that's all. Each tile tak
 | `title` | no       | label shown under the icon (also searched)             |
 | `halo`  | no       | `true` adds a theme-aware halo around the logo so single-color (all-white or all-black) transparent PNGs stay visible. Defaults to `false`. |
 
+```yaml
+# config.yaml
+title: portal
+pages:
+  - title: Services
+    tiles:
+      - href: https://grafana
+        tags: grafana charts
+        img: img/grafana.png
+```
+
 ```json
+// config.json
 {
     "title": "portal",
     "pages": [
@@ -71,11 +93,18 @@ docker run --rm -p 8080:80 -v "$PWD":/usr/share/nginx/html:ro nginx:alpine
 Either way the container/server only reads static files; nothing reaches out to
 the network, so it works the same air-gapped.
 
-## Updating the vendored Lit
+## Updating the vendored libraries
 
-The only third-party code is the pinned Lit bundle. To refresh it:
+The only third-party code is two pinned, self-contained ES-module bundles in
+[vendor/](vendor/). Refresh them on a machine with network access (then copy
+into the air-gapped host):
 
 ```sh
+# Lit (web components)
 curl -L -o vendor/lit-all.min.js \
   "https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js"
+
+# js-yaml (YAML config parsing)
+curl -L -o vendor/js-yaml.min.js \
+  "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm"
 ```
