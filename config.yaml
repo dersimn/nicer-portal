@@ -1,21 +1,21 @@
 ---
-title: portal
+title: My Portal Title
 pages:
-  - title: Services
+  - title: Config Demos
     tiles:
       # Clickable, but blank tile
       - href: https://just.url
       # Title text only, no image
       - href: https://just.url.with.title
         title: Just a URL with title
-      # Image only, no title text, max size 141x80
+      # Image only, no title text
       - href: https://just.url.with.image
-        img: https://placehold.co/141x80
-      # Tiles with title and image, max. 141x59
+        img: https://placehold.co/152x100
+      # Tiles with title and image
       - href: https://just.url.with.image
-        img: https://placehold.co/141x59
+        img: https://placehold.co/152x80
         title: This title is too long and will be truncated
-      # Image larger than 141x80, scaled down to fit
+      # Larger images will be scaled down to fit
       - href: https://just.url.with.image.wide
         img: https://placehold.co/1000x100
       - href: https://just.url.with.image.tall
@@ -26,9 +26,10 @@ pages:
       - href: "${protocol}//${hostname}:${port + 1000}/foo"
         title: This host, port + 1000
         tags: dynamic relative template
-        img: img/node-red.png
+        img: https://placehold.co/152x80
 
-
+  - title: Services
+    tiles:
       - href: https://wiki
         tags: wiki
         img: img/wiki.png
