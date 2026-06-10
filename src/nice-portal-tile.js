@@ -40,12 +40,15 @@ export class NicePortalTile extends LitElement {
             transform: translateY(-1px);
         }
 
+        /* The anchor fills the tile and owns all the inner padding, so #img and
+           #title don't add any of their own. */
         a {
             display: flex;
             flex-direction: column;
             width: 100%;
             height: 100%;
             box-sizing: border-box;
+            padding: 6px;
             text-decoration: none;
             outline: none;
             color: inherit;
@@ -61,8 +64,8 @@ export class NicePortalTile extends LitElement {
         }
 
         img {
-            max-height: 80%;
-            max-width: 90%;
+            max-height: 100%;
+            max-width: 100%;
             user-select: none;
             -webkit-user-drag: none;
         }
@@ -77,7 +80,6 @@ export class NicePortalTile extends LitElement {
             flex: 0 0 auto;
             height: 20px;
             line-height: 20px;
-            padding: 0 6px 6px;
             font-size: 13px;
             color: var(--tile-title, #90a4ae);
             user-select: none;
@@ -93,7 +95,6 @@ export class NicePortalTile extends LitElement {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 6px;
             white-space: normal;
         }
     `;
