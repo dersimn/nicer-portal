@@ -12,6 +12,7 @@ export class NicePortalApp extends LitElement {
         heading: {type: String},
         pages: {state: true},
         search: {state: true},
+        searchOpen: {type: Boolean, reflect: true, attribute: 'search-open'},
         themeMode: {state: true}
     };
 
@@ -103,7 +104,8 @@ export class NicePortalApp extends LitElement {
             background: var(--hover-overlay, rgba(255, 255, 255, 0.1));
         }
 
-        .theme-toggle {
+        .theme-toggle,
+        .search-toggle {
             flex: 0 0 auto;
             display: flex;
             align-items: center;
@@ -118,19 +120,28 @@ export class NicePortalApp extends LitElement {
             cursor: pointer;
         }
 
-        .theme-toggle:hover {
+        .theme-toggle:hover,
+        .search-toggle:hover {
             background: var(--hover-overlay, rgba(255, 255, 255, 0.1));
         }
 
-        .theme-toggle:focus-visible {
+        .theme-toggle:focus-visible,
+        .search-toggle:focus-visible {
             outline: 2px solid var(--accent, #4dd0e1);
             outline-offset: 1px;
         }
 
-        .theme-toggle svg {
+        .theme-toggle svg,
+        .search-toggle svg {
             width: 22px;
             height: 22px;
             fill: currentColor;
+        }
+
+        /* The search-toggle only exists on small screens, where the inline
+           search field is collapsed behind it. */
+        .search-toggle {
+            display: none;
         }
 
         #content {
@@ -144,6 +155,41 @@ export class NicePortalApp extends LitElement {
             text-align: center;
             color: var(--muted, #90a4ae);
         }
+
+        /* Small screens: collapse the inline search behind a magnifier button.
+           Tapping it expands the field across the bar (with a back arrow to
+           dismiss) and hides the title and theme toggle to make room. */
+        @media (max-width: 600px) {
+            header {
+                gap: 8px;
+            }
+
+            .search {
+                display: none;
+            }
+
+            .search-toggle {
+                display: flex;
+                margin-left: auto;
+            }
+
+            :host([search-open]) .title,
+            :host([search-open]) .theme-toggle {
+                display: none;
+            }
+
+            :host([search-open]) .search {
+                display: flex;
+                flex: 1 1 auto;
+                max-width: none;
+                margin-left: 0;
+            }
+
+            :host([search-open]) .search-toggle {
+                order: -1;
+                margin-left: 0;
+            }
+        }
     `;
 
     constructor() {
@@ -151,6 +197,7 @@ export class NicePortalApp extends LitElement {
         this.heading = 'portal';
         this.pages = [];
         this.search = '';
+        this.searchOpen = false;
         this._allPages = [];
         this.themeMode = this._readThemeMode();
         this._onKeydown = this._onKeydown.bind(this);
@@ -305,6 +352,15 @@ export class NicePortalApp extends LitElement {
                     </button>
                 </label>
                 <button
+                    class="search-toggle"
+                    type="button"
+                    tabindex="-1"
+                    aria-label=${this.searchOpen ? 'Close search' : 'Search'}
+                    @click=${this._toggleSearch}
+                >
+                    ${this._searchToggleIcon()}
+                </button>
+                <button
                     class="theme-toggle"
                     type="button"
                     tabindex="-1"
@@ -371,6 +427,24 @@ export class NicePortalApp extends LitElement {
         this._searchInput.focus();
     }
 
+    /** Small-screen only: expand/collapse the search field behind its icon. */
+    _toggleSearch() {
+        this.searchOpen = !this.searchOpen;
+        if (this.searchOpen) {
+            // The field is freshly un-hidden; focus it after the render.
+            this.updateComplete.then(() => this._searchInput?.focus());
+        } else {
+            this.search = '';
+        }
+    }
+
+    _searchToggleIcon() {
+        // Complete <svg> per branch so each is created in the SVG namespace.
+        return this.searchOpen
+            ? html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" /></svg>`
+            : html`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" /></svg>`;
+    }
+
     _readThemeMode() {
         try {
             const stored = localStorage.getItem('portal-theme');
@@ -432,7 +506,8 @@ export class NicePortalApp extends LitElement {
         switch (event.key) {
             case 'Escape':
                 this.search = '';
-                this._searchInput.blur();
+                this._searchInput?.blur();
+                this.searchOpen = false;
                 return;
 
             case 'Enter': {
@@ -477,7 +552,8 @@ export class NicePortalApp extends LitElement {
             default:
                 // Any other printable key starts/continues a search.
                 if (!searchFocused && event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-                    this._searchInput.focus();
+                    this.searchOpen = true; // reveal the field on small screens
+                    this._searchInput?.focus();
                 }
         }
     }

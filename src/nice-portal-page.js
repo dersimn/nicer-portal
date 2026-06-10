@@ -28,11 +28,21 @@ export class NicePortalPage extends LitElement {
             color: var(--heading-fg, #eceff1);
         }
 
+        /* Auto-fill grid: tracks are at least one tile wide and stretch to
+           fill the row, so there's never leftover space on the right. Narrow
+           screens collapse to two columns, then one on the smallest phones. */
         #container {
-            padding: 6px;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        /* Override the tile's intrinsic fixed width so it fills its grid track
+           (outer-tree rules win over the tile's own :host width). */
+        #container nice-portal-tile {
+            width: 100%;
+            margin: 0;
         }
     `;
 
